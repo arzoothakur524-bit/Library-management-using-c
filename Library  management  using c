@@ -1,0 +1,190 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+typedef struct Book {
+    int id;
+    char title[50];
+    char author[50];
+    int issued;
+    struct Book *next;
+} Book;
+
+Book *head = NULL;
+
+// check duplicate id
+int exists(int id) {
+    Book *t = head;
+    while (t) {
+        if (t->id == id) return 1;
+        t = t->next;
+    }
+    return 0;
+}
+
+// add new book
+void addBook() {
+    Book *n = (Book*)malloc(sizeof(Book));
+
+    printf("Enter ID: ");
+    scanf("%d", &n->id);
+
+    if (exists(n->id)) {
+        printf("ID already exists\n");
+        free(n);
+        return;
+    }
+
+    getchar();
+    printf("Enter Title: ");
+    fgets(n->title, 50, stdin);
+    n->title[strcspn(n->title, "\n")] = 0;
+
+    printf("Enter Author: ");
+    fgets(n->author, 50, stdin);
+    n->author[strcspn(n->author, "\n")] = 0;
+
+    n->issued = 0;
+    n->next = NULL;
+
+    if (!head) {
+        head = n;
+    } else {
+        Book *t = head;
+        while (t->next) t = t->next;
+        t->next = n;
+    }
+
+    printf("Book added\n");
+}
+
+void displayBooks() {
+    Book *t = head;
+
+    if (!t) {
+        printf("No books available\n");
+        return;
+    }
+
+    printf("\nID\tTitle\t\tAuthor\t\tStatus\n");
+    while (t) {
+        printf("%d\t%s\t\t%s\t\t%s\n",
+               t->id, t->title, t->author,
+               t->issued ? "Issued" : "Available");
+        t = t->next;
+    }
+}
+
+void searchBook() {
+    int id;
+    printf("Enter ID: ");
+    scanf("%d", &id);
+
+    Book *t = head;
+    while (t) {
+        if (t->id == id) {
+            printf("Found: %s by %s (%s)\n",
+                   t->title, t->author,
+                   t->issued ? "Issued" : "Available");
+            return;
+        }
+        t = t->next;
+    }
+    printf("Book not found\n");
+}
+
+void issueBook() {
+    int id;
+    printf("Enter ID: ");
+    scanf("%d", &id);
+
+    Book *t = head;
+    while (t) {
+        if (t->id == id) {
+            if (t->issued) {
+                printf("Already issued\n");
+            } else {
+                t->issued = 1;
+                printf("Book issued\n");
+            }
+            return;
+        }
+        t = t->next;
+    }
+    printf("Book not found\n");
+}
+
+void returnBook() {
+    int id;
+    printf("Enter ID: ");
+    scanf("%d", &id);
+
+    Book *t = head;
+    while (t) {
+        if (t->id == id) {
+            if (!t->issued) {
+                printf("Not issued\n");
+            } else {
+                t->issued = 0;
+                printf("Book returned\n");
+            }
+            return;
+        }
+        t = t->next;
+    }
+    printf("Book not found\n");
+}
+
+void deleteBook() {
+    int id;
+    printf("Enter ID: ");
+    scanf("%d", &id);
+
+    Book *t = head, *prev = NULL;
+
+    while (t) {
+        if (t->id == id) {
+            if (!prev)
+                head = t->next;
+            else
+                prev->next = t->next;
+
+            free(t);
+            printf("Book deleted\n");
+            return;
+        }
+        prev = t;
+        t = t->next;
+    }
+    printf("Book not found\n");
+}
+
+int main() {
+    int ch;
+
+    while (1) {
+        printf("\n--- Library Menu ---\n");
+        printf("1. Add Book\n");
+        printf("2. Display Books\n");
+        printf("3. Search Book\n");
+        printf("4. Issue Book\n");
+        printf("5. Return Book\n");
+        printf("6. Delete Book\n");
+        printf("7. Exit\n");
+        printf("Enter choice: ");
+        scanf("%d", &ch);
+
+        switch (ch) {
+            case 1: addBook(); break;
+            case 2: displayBooks(); break;
+            case 3: searchBook(); break;
+            case 4: issueBook(); break;
+            case 5: returnBook(); break;
+            case 6: deleteBook(); break;
+            case 7: exit(0);
+            default: printf("Invalid choice\n");
+        }
+    }
+
+    return 0;
+}
